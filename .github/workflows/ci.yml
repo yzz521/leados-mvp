@@ -30,12 +30,24 @@ jobs:
           ./scripts/run.sh > /tmp/leados.log 2>&1 &
           SERVER_PID=$!
           trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          READY=0
           for i in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8080/api/health >/dev/null; then
+              READY=1
               break
+            fi
+            if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+              echo "LeadOS startup process exited before becoming healthy."
+              cat /tmp/leados.log
+              exit 1
             fi
             sleep 1
           done
+          if [[ "$READY" != "1" ]]; then
+            echo "LeadOS did not become healthy within 30 seconds."
+            cat /tmp/leados.log
+            exit 1
+          fi
           curl -fsS http://127.0.0.1:8080/api/health
           python3 scripts/smoke-test.py
           python3 scripts/ai-gateway-smoke-test.py
