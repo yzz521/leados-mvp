@@ -44,7 +44,7 @@ final class ApiHandler implements HttpHandler {
     private void routeApi(HttpExchange x, String path) throws IOException {
         String method = x.getRequestMethod().toUpperCase(Locale.ROOT);
         if ("GET".equals(method) && "/api/health".equals(path)) {
-            sendJson(x, 200, mapOf("status", "UP", "application", "LeadOS", "version", "0.1.0", "time", Instant.now().toString()));
+            sendJson(x, 200, mapOf("status", "UP", "application", "LeadOS", "version", "0.2.0", "time", Instant.now().toString()));
             return;
         }
         if ("GET".equals(method) && "/api/overview".equals(path)) { sendJson(x, 200, overview()); return; }

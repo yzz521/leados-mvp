@@ -1,6 +1,6 @@
 # LeadOS MVP — AI 商机增长工作台
 
-> 版本：0.1.0  
+> 版本：0.2.0  
 > 交付形态：可运行的本地 MVP 源码 + 操作文档 + API 说明  
 > 目标：用一套共同底座承载 Local Growth（国内本地获客）和 Export Growth（外贸客户开发）两条业务线。
 
@@ -136,7 +136,21 @@ leados-mvp/
     └── smoke-test.py
 ```
 
-## 8. API 文档
+## 8. UI/UX 设计说明（0.2.0）
+
+本版本对前端工作台进行了整体视觉和交互重构，业务 API 与 JSON 数据结构保持兼容。
+
+- 深色左侧导航 + 浅色内容工作区，统一使用森林绿作为主强调色。
+- 统一按钮、卡片、表格、表单、状态标签、间距和焦点状态。
+- 总览页突出核心指标、商机阶段分布、今日待办和最近线索。
+- 线索列表保留搜索、筛选、阶段调整、详情和分析能力。
+- 客户详情使用右侧抽屉；窄屏下自动转为底部抽屉。
+- 手机端使用侧滑导航，支持 `⌘/Ctrl + K` 快速聚焦线索搜索。
+- 不依赖 UI 框架或第三方 CDN；SVG 图标以内联方式提供，字体使用系统回退栈。
+
+详细设计规范和手工验收点见 `docs/11-UI-UX-Redesign.md`；页面预览截图见 `docs/screenshots/`。
+
+## 9. API 文档
 
 启动服务后，健康检查：
 
@@ -149,7 +163,7 @@ curl http://localhost:8080/api/health
 - `docs/04-API-Reference.md`
 - `docs/openapi.yaml`
 
-## 9. 验证方法
+## 10. 验证方法
 
 项目已在 JDK 21 环境完成编译和 HTTP 冒烟验证。启动服务后另开一个终端执行：
 
@@ -163,7 +177,7 @@ python3 scripts/smoke-test.py
 LEADOS_BASE_URL=http://localhost:8181 python3 scripts/smoke-test.py
 ```
 
-## 10. 下一步开发建议
+## 11. 下一步开发建议
 
 生产 SaaS 的推荐升级顺序：
 
@@ -177,6 +191,6 @@ LEADOS_BASE_URL=http://localhost:8181 python3 scripts/smoke-test.py
 
 详细路线见 `docs/08-Roadmap.md`。
 
-## 11. 安全提示
+## 12. 安全提示
 
 不要将本地演示服务直接暴露到公网。当前版本无身份认证、TLS、租户鉴权和速率限制。对真实个人信息或客户名单进行处理前，应先明确数据来源、处理目的、联系授权、跨境要求、保留期限和退订机制。详见 `docs/07-Compliance-and-Security.md`。

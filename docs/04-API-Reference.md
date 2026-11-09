@@ -20,7 +20,7 @@ Base URL：`http://localhost:8080`。所有 JSON 请求使用 UTF-8。请求体�
 成功响应：
 
 ```json
-{"status":"UP","application":"LeadOS","version":"0.1.0","time":"2026-11-09T00:00:00Z"}
+{"status":"UP","application":"LeadOS","version":"0.2.0","time":"2026-11-09T00:00:00Z"}
 ```
 
 ## 2. 总览

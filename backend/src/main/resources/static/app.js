@@ -70,7 +70,7 @@ function switchPage(page) {
   state.page = page;
   $$('.page').forEach(el => el.classList.toggle('active', el.id === `page-${page}`));
   $$('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page === page));
-  $('#pageBreadcrumb').textContent = ({ overview:'总览工作台', leads:'线索中心', tasks:'跟进任务' })[page] || '工作空间';
+  $('#pageBreadcrumb').textContent = ({ overview:'增长总览', leads:'线索中心', tasks:'跟进任务' })[page] || '工作空间';
   if (page === 'leads') renderLeads();
   if (page === 'tasks') renderTasks();
 }
@@ -82,7 +82,7 @@ function effectiveMarket() {
 }
 
 async function loadData() {
-  $('#connectionStatus').textContent = '● 正在同步';
+  $('#connectionStatus').innerHTML = '<span class="connection-dot is-syncing"></span>正在同步';
   try {
     const [overview, leads, tasks] = await Promise.all([
       api('/api/overview'),
@@ -96,9 +96,9 @@ async function loadData() {
     renderLeads();
     renderTasks();
     $('#navLeadCount').textContent = state.leads.length;
-    $('#connectionStatus').textContent = '● 服务正常';
+    $('#connectionStatus').innerHTML = '<span class="connection-dot"></span>服务正常';
   } catch (error) {
-    $('#connectionStatus').textContent = '● 连接异常';
+    $('#connectionStatus').innerHTML = '<span class="connection-dot is-error"></span>连接异常';
     showToast(error.message, 'error');
   }
 }
@@ -112,6 +112,10 @@ function renderOverview() {
   if (!overview) return;
   const all = marketFiltered(state.leads);
   const tasks = state.tasks.filter(t => t.status !== 'DONE');
+  const dateLabel = $('#overviewDate');
+  if (dateLabel) dateLabel.textContent = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'2-digit', year:'numeric' }).toUpperCase();
+  const funnelTotal = $('#funnelTotal');
+  if (funnelTotal) funnelTotal.textContent = all.length;
   const statusCount = status => all.filter(l => l.status === status).length;
   $('#metricTotal').textContent = all.length;
   $('#metricNew').textContent = statusCount('NEW');
@@ -310,6 +314,7 @@ async function importCsvFile(file) {
 function setMarket(market) {
   state.market = market;
   $('#globalMarket').value = market;
+  $$('[data-market]').forEach(button => button.classList.toggle('selected', button.dataset.market === market));
   if ($('#leadMarketFilter')) $('#leadMarketFilter').value = 'ALL';
   renderOverview(); renderLeads(); renderTasks();
 }
@@ -334,7 +339,10 @@ function bindEvents() {
   $('#importButton').addEventListener('click', () => $('#csvFile').click());
   $('#leadsImportButton').addEventListener('click', () => $('#csvFile').click());
   $('#csvFile').addEventListener('change', event => importCsvFile(event.target.files?.[0]));
-  document.addEventListener('keydown', event => { if (event.key === 'Escape') $$('.modal-backdrop.open').forEach(el => closeModal(el.id)); });
+  document.addEventListener('keydown', event => {
+    if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') { event.preventDefault(); switchPage('leads'); $('#leadSearch')?.focus(); }
+    if (event.key === 'Escape') $$('.modal-backdrop.open').forEach(el => closeModal(el.id));
+  });
 }
 
 bindEvents();
