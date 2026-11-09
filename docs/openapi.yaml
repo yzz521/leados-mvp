@@ -1,0 +1,186 @@
+openapi: 3.1.0
+info:
+  title: LeadOS MVP API
+  version: 0.1.0
+  description: Local/Export lead and sales follow-up workspace API. Demo-only; no authentication.
+servers:
+  - url: http://localhost:8080
+paths:
+  /api/health:
+    get:
+      summary: Health check
+      responses:
+        '200': { description: Service is healthy }
+  /api/overview:
+    get:
+      summary: Dashboard overview
+      responses:
+        '200': { description: KPI, funnel, recent leads and tasks }
+  /api/leads:
+    get:
+      summary: List leads
+      parameters:
+        - in: query
+          name: marketType
+          schema: { type: string, enum: [ALL, LOCAL, EXPORT] }
+        - in: query
+          name: status
+          schema: { type: string, enum: [ALL, NEW, QUALIFIED, CONTACTED, OPPORTUNITY, WON, LOST] }
+        - in: query
+          name: q
+          schema: { type: string }
+      responses:
+        '200': { description: Lead list }
+    post:
+      summary: Create a lead
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LeadInput' }
+      responses:
+        '201': { description: Lead created }
+        '400': { description: Validation error }
+        '409': { description: Duplicate contact data }
+  /api/leads/import/csv:
+    post:
+      summary: Import CSV data encoded in JSON
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [csv]
+              properties:
+                marketType: { type: string, enum: [LOCAL, EXPORT], default: LOCAL }
+                csv: { type: string }
+      responses:
+        '200': { description: Import results }
+  /api/leads/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      summary: Get lead and activities
+      responses:
+        '200': { description: Lead detail }
+        '404': { description: Lead not found }
+    patch:
+      summary: Update lead fields
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LeadInput' }
+      responses:
+        '200': { description: Updated lead }
+        '409': { description: Duplicate contact data }
+    delete:
+      summary: Delete a lead (hard delete in MVP)
+      responses:
+        '200': { description: Deleted }
+  /api/leads/{id}/analyze:
+    post:
+      summary: Run local rule-based lead scoring
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      responses:
+        '200': { description: Scoring result and recommendation }
+  /api/leads/{id}/activities:
+    post:
+      summary: Add an interaction note
+      parameters:
+        - $ref: '#/components/parameters/Id'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [content]
+              properties:
+                type: { type: string, enum: [NOTE, CALL, EMAIL, MEETING, SYSTEM] }
+                content: { type: string }
+      responses:
+        '201': { description: Activity created }
+  /api/activities:
+    get:
+      summary: List activities
+      parameters:
+        - in: query
+          name: leadId
+          schema: { type: string }
+      responses:
+        '200': { description: Activity list }
+  /api/tasks:
+    get:
+      summary: List tasks
+      parameters:
+        - in: query
+          name: status
+          schema: { type: string, enum: [ALL, OPEN, IN_PROGRESS, DONE] }
+        - in: query
+          name: leadId
+          schema: { type: string }
+      responses:
+        '200': { description: Task list }
+    post:
+      summary: Create task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskInput' }
+      responses:
+        '201': { description: Task created }
+  /api/tasks/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    patch:
+      summary: Update task
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/TaskInput' }
+      responses:
+        '200': { description: Task updated }
+    delete:
+      summary: Delete task
+      responses:
+        '200': { description: Task deleted }
+components:
+  parameters:
+    Id:
+      in: path
+      name: id
+      required: true
+      schema: { type: string }
+  schemas:
+    LeadInput:
+      type: object
+      properties:
+        marketType: { type: string, enum: [LOCAL, EXPORT] }
+        subjectType: { type: string, enum: [COMPANY, PERSON] }
+        companyName: { type: string }
+        contactName: { type: string }
+        email: { type: string }
+        phone: { type: string }
+        region: { type: string }
+        source: { type: string }
+        productInterest: { type: string }
+        requirement: { type: string }
+        budget: { type: string }
+        timeline: { type: string }
+        owner: { type: string }
+        status: { type: string, enum: [NEW, QUALIFIED, CONTACTED, OPPORTUNITY, WON, LOST] }
+        contactPermission: { type: string, enum: [UNCONFIRMED, AUTHORIZED, OPTED_OUT, NOT_APPLICABLE] }
+    TaskInput:
+      type: object
+      properties:
+        title: { type: string }
+        leadId: { type: string }
+        description: { type: string }
+        priority: { type: string, enum: [LOW, MEDIUM, HIGH] }
+        status: { type: string, enum: [OPEN, IN_PROGRESS, DONE] }
+        dueAt: { type: string, format: date-time }

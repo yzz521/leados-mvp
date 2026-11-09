@@ -1,0 +1,3 @@
+市场类型,主体类型,企业名称,联系人,邮箱,电话,地区,来源,意向产品,需求,预算,时间,负责人,联系授权
+EXPORT,COMPANY,Example Industrial GmbH,采购部门（待核验）,procurement@example.com,,德国,企业官网,工业切割设备,官网产品类别存在匹配但未确认采购意向,待确认,待确认,Export Team,UNCONFIRMED
+EXPORT,COMPANY,Example Machinery Sp. z o.o.,,, ,波兰,展会目录,工业设备,待补充企业研究和采购负责人信息,待确认,待确认,Export Team,UNCONFIRMED

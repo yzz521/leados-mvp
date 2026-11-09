@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f5f6f8" />
+  <title>LeadOS · AI 商机增长工作台</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">L</div>
+        <div><div class="brand-name">LeadOS</div><div class="brand-sub">GROWTH WORKSPACE</div></div>
+      </div>
+      <div class="workspace-switch">
+        <div class="workspace-avatar">DE</div>
+        <div class="workspace-info"><strong>演示工作空间</strong><span>个人体验版</span></div>
+        <span class="chevron">⌄</span>
+      </div>
+      <div class="nav-label">工作空间</div>
+      <nav class="main-nav" aria-label="主导航">
+        <button class="nav-item active" data-page="overview"><span class="nav-icon">▦</span> 总览工作台</button>
+        <button class="nav-item" data-page="leads"><span class="nav-icon">◎</span> 线索中心 <span class="nav-count" id="navLeadCount">0</span></button>
+        <button class="nav-item" data-page="tasks"><span class="nav-icon">✓</span> 跟进任务</button>
+      </nav>
+      <div class="nav-label">业务产品</div>
+      <div class="product-links">
+        <button class="product-link" data-market="LOCAL"><span class="product-dot local-dot"></span><span><strong>Local Growth</strong><small>本地获客</small></span></button>
+        <button class="product-link" data-market="EXPORT"><span class="product-dot export-dot"></span><span><strong>Export Growth</strong><small>外贸开发</small></span></button>
+      </div>
+      <div class="sidebar-spacer"></div>
+      <div class="sidebar-note"><span class="note-icon">✦</span><div><strong>AI 助手已就绪</strong><small>当前使用本地规则分析演示引擎</small></div></div>
+      <div class="user-profile"><div class="user-avatar">U</div><div><strong>演示用户</strong><small>demo workspace</small></div><span class="more">···</span></div>
+    </aside>
+
+    <main class="main-content">
+      <header class="topbar">
+        <div class="breadcrumb"><span>工作空间</span><b>/</b><strong id="pageBreadcrumb">总览工作台</strong></div>
+        <div class="topbar-actions">
+          <label class="market-select-wrap"><span>业务线</span><select id="globalMarket"><option value="ALL">全部业务</option><option value="LOCAL">本地获客</option><option value="EXPORT">外贸开发</option></select></label>
+          <button class="icon-button" id="refreshButton" title="刷新数据" aria-label="刷新数据">↻</button>
+          <div class="top-avatar">U</div>
+        </div>
+      </header>
+
+      <div class="page-wrap">
+        <section class="page active" id="page-overview">
+          <div class="page-heading">
+            <div><div class="eyebrow">MONDAY · GROWTH OVERVIEW</div><h1>早上好，今天的商机准备好了。</h1><p>集中查看线索、销售进度和需要优先处理的客户。</p></div>
+            <div class="heading-actions"><button class="button button-secondary" id="importButton">⇧ 导入线索</button><button class="button button-primary" data-open-lead>＋ 新增线索</button></div>
+          </div>
+          <div class="metric-grid" id="metricGrid">
+            <article class="metric-card"><div class="metric-label">全部线索 <span class="metric-symbol">↗</span></div><div class="metric-value" id="metricTotal">—</div><div class="metric-foot">累计进入工作空间</div></article>
+            <article class="metric-card"><div class="metric-label">待处理线索 <span class="metric-symbol amber">◷</span></div><div class="metric-value" id="metricNew">—</div><div class="metric-foot">等待进一步筛选</div></article>
+            <article class="metric-card"><div class="metric-label">高意向客户 <span class="metric-symbol green">✦</span></div><div class="metric-value" id="metricHigh">—</div><div class="metric-foot">建议优先安排跟进</div></article>
+            <article class="metric-card"><div class="metric-label">待完成任务 <span class="metric-symbol violet">✓</span></div><div class="metric-value" id="metricTasks">—</div><div class="metric-foot">销售跟进待办</div></article>
+          </div>
+          <div class="content-grid overview-grid">
+            <section class="panel funnel-panel">
+              <div class="panel-heading"><div><h2>商机转化漏斗</h2><p>按当前线索阶段统计</p></div><span class="panel-tag">实时数据</span></div>
+              <div class="funnel-list" id="funnelList"></div>
+            </section>
+            <section class="panel action-panel">
+              <div class="panel-heading"><div><h2>今日优先事项</h2><p>根据任务截止时间排序</p></div><button class="text-button" data-goto="tasks">查看全部 →</button></div>
+              <div id="upcomingTasks" class="task-preview-list"></div>
+            </section>
+          </div>
+          <section class="panel recent-panel">
+            <div class="panel-heading"><div><h2>最近新增线索</h2><p>及时了解新进入的商机</p></div><button class="text-button" data-goto="leads">进入线索中心 →</button></div>
+            <div class="table-wrap"><table><thead><tr><th>客户 / 企业</th><th>业务线</th><th>来源</th><th>意向评分</th><th>当前阶段</th><th>负责人</th></tr></thead><tbody id="recentLeadRows"></tbody></table></div>
+          </section>
+        </section>
+
+        <section class="page" id="page-leads">
+          <div class="page-heading compact-heading"><div><div class="eyebrow">LEAD MANAGEMENT</div><h1>线索中心</h1><p>统一管理本地客户和海外企业线索，保留来源与联系权限信息。</p></div><div class="heading-actions"><button class="button button-secondary" id="leadsImportButton">⇧ 导入 CSV</button><button class="button button-primary" data-open-lead>＋ 新增线索</button></div></div>
+          <section class="panel lead-panel">
+            <div class="lead-toolbar"><div class="search-box"><span>⌕</span><input id="leadSearch" type="search" placeholder="搜索企业、联系人、邮箱或需求..." /></div><div class="filter-group"><select id="statusFilter"><option value="ALL">全部阶段</option><option value="NEW">新线索</option><option value="QUALIFIED">已筛选</option><option value="CONTACTED">跟进中</option><option value="OPPORTUNITY">商机</option><option value="WON">已成交</option><option value="LOST">已丢单</option></select><select id="leadMarketFilter"><option value="ALL">全部业务线</option><option value="LOCAL">本地获客</option><option value="EXPORT">外贸开发</option></select></div></div>
+            <div class="table-wrap"><table class="lead-table"><thead><tr><th>客户信息</th><th>业务线</th><th>来源</th><th>意向评分</th><th>阶段</th><th>联系权限</th><th>创建时间</th><th></th></tr></thead><tbody id="leadRows"></tbody></table></div>
+            <div class="table-footer"><span id="leadResultCount">0 条线索</span><span>当前为本地演示工作空间</span></div>
+          </section>
+        </section>
+
+        <section class="page" id="page-tasks">
+          <div class="page-heading compact-heading"><div><div class="eyebrow">SALES FOLLOW-UP</div><h1>跟进任务</h1><p>把客户沟通转化为有负责人、有截止时间的实际行动。</p></div><div class="heading-actions"><button class="button button-primary" id="newTaskButton">＋ 新建任务</button></div></div>
+          <div class="task-summary" id="taskSummary"></div>
+          <section class="panel task-panel"><div class="panel-heading"><div><h2>任务列表</h2><p>完成后及时更新状态</p></div><select id="taskStatusFilter"><option value="ALL">全部任务</option><option value="OPEN">待处理</option><option value="IN_PROGRESS">进行中</option><option value="DONE">已完成</option></select></div><div id="taskRows" class="task-list"></div></section>
+        </section>
+      </div>
+      <footer class="app-footer"><span>LeadOS MVP · v0.1.0</span><span>本地演示数据仅用于产品验证，请勿录入真实敏感个人信息。</span><span id="connectionStatus">● 正在连接</span></footer>
+    </main>
+  </div>
+
+  <div class="modal-backdrop" id="leadModal" aria-hidden="true">
+    <div class="modal modal-wide" role="dialog" aria-modal="true" aria-labelledby="leadModalTitle">
+      <div class="modal-header"><div><div class="eyebrow">NEW PROSPECT</div><h2 id="leadModalTitle">新增线索</h2><p>录入客户基本信息，后续可以运行客户分析。</p></div><button class="close-button" data-close-modal="leadModal" aria-label="关闭">×</button></div>
+      <form id="leadForm">
+        <div class="form-grid">
+          <label class="field"><span>业务线 <i>*</i></span><select name="marketType" id="formMarket"><option value="LOCAL">本地获客</option><option value="EXPORT">外贸开发</option></select></label>
+          <label class="field"><span>客户主体</span><select name="subjectType"><option value="COMPANY">企业</option><option value="PERSON">个人</option></select></label>
+          <label class="field"><span>企业名称</span><input name="companyName" placeholder="企业或客户名称" /></label>
+          <label class="field"><span>联系人</span><input name="contactName" placeholder="联系人姓名" /></label>
+          <label class="field"><span>邮箱</span><input type="email" name="email" placeholder="name@example.com" /></label>
+          <label class="field"><span>电话</span><input name="phone" placeholder="非必填" /></label>
+          <label class="field"><span id="regionLabel">城市 / 区域</span><input name="region" placeholder="例如：郑州" /></label>
+          <label class="field"><span>线索来源</span><input name="source" placeholder="例如：官网表单、展会、人工录入" /></label>
+          <label class="field full-field"><span>意向产品</span><input name="productInterest" placeholder="客户感兴趣的产品或服务" /></label>
+          <label class="field full-field"><span>客户需求</span><textarea name="requirement" rows="3" placeholder="描述客户需求、采购目的或咨询内容"></textarea></label>
+          <label class="field"><span>预算</span><input name="budget" placeholder="例如：10-20 万 / 待确认" /></label>
+          <label class="field"><span>预计决策 / 采购时间</span><input name="timeline" placeholder="例如：本月、1-3个月、待确认" /></label>
+          <label class="field"><span>负责人</span><input name="owner" placeholder="未分配" /></label>
+          <label class="field"><span>联系权限状态</span><select name="contactPermission"><option value="UNCONFIRMED">未确认</option><option value="AUTHORIZED">已取得授权 / 请求</option><option value="OPTED_OUT">已拒绝联系</option><option value="NOT_APPLICABLE">不适用（仅企业信息）</option></select></label>
+        </div>
+        <div class="form-note">请仅录入有合法来源、且可在当前目的和渠道范围内使用的信息。未确认联系权限的线索不会被系统自动触达。</div>
+        <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal="leadModal">取消</button><button type="submit" class="button button-primary" id="saveLeadButton">保存线索</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="taskModal" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="taskModalTitle">
+      <div class="modal-header"><div><div class="eyebrow">FOLLOW-UP TASK</div><h2 id="taskModalTitle">新建跟进任务</h2><p>为客户下一步行动设置负责人和时间。</p></div><button class="close-button" data-close-modal="taskModal" aria-label="关闭">×</button></div>
+      <form id="taskForm">
+        <label class="field"><span>任务标题 <i>*</i></span><input name="title" required placeholder="例如：联系客户确认采购计划" /></label>
+        <label class="field"><span>关联线索</span><select name="leadId" id="taskLeadSelect"><option value="">暂不关联</option></select></label>
+        <div class="form-grid"><label class="field"><span>优先级</span><select name="priority"><option value="MEDIUM">普通</option><option value="HIGH">高</option><option value="LOW">低</option></select></label><label class="field"><span>截止时间</span><input type="datetime-local" name="dueAt" /></label></div>
+        <label class="field"><span>任务说明</span><textarea name="description" rows="3" placeholder="补充需要完成的事情"></textarea></label>
+        <div class="modal-actions"><button type="button" class="button button-secondary" data-close-modal="taskModal">取消</button><button type="submit" class="button button-primary">创建任务</button></div>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="detailModal" aria-hidden="true">
+    <div class="modal modal-wide detail-modal" role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+      <div class="modal-header"><div><div class="eyebrow">LEAD PROFILE</div><h2 id="detailTitle">客户详情</h2><p id="detailSubtitle"></p></div><button class="close-button" data-close-modal="detailModal" aria-label="关闭">×</button></div>
+      <div id="detailContent"></div>
+    </div>
+  </div>
+
+  <input type="file" id="csvFile" accept=".csv,text/csv" hidden />
+  <div class="toast-region" id="toastRegion" aria-live="polite"></div>
+  <script src="/app.js" defer></script>
+</body>
+</html>

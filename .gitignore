@@ -1,0 +1,5 @@
+backend/build/
+data/
+*.log
+.DS_Store
+Thumbs.db
