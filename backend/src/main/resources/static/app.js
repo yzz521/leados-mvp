@@ -70,9 +70,10 @@ function switchPage(page) {
   state.page = page;
   $$('.page').forEach(el => el.classList.toggle('active', el.id === `page-${page}`));
   $$('.nav-item').forEach(el => el.classList.toggle('active', el.dataset.page === page));
-  $('#pageBreadcrumb').textContent = ({ overview:'增长总览', leads:'线索中心', tasks:'跟进任务' })[page] || '工作空间';
+  $('#pageBreadcrumb').textContent = ({ overview:'增长总览', leads:'线索中心', tasks:'跟进任务', assistant:'AI 销售工作台' })[page] || '工作空间';
   if (page === 'leads') renderLeads();
   if (page === 'tasks') renderTasks();
+  if (page === 'assistant' && typeof renderAssistant === 'function') renderAssistant();
 }
 
 function effectiveMarket() {

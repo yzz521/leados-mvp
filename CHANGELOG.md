@@ -1,16 +1,10 @@
-# Changelog
+# LeadOS AI Sales Workbench 0.3.0
 
-## 0.2.0 — UI/UX redesign
-
-- Replaced the early MVP visual treatment with a consistent LeadOS design system.
-- Reworked the navigation shell, overview, lead list, task center, modal forms, and customer detail drawer.
-- Added responsive mobile navigation and a right-side customer detail drawer (bottom sheet on small screens).
-- Standardized spacing, typography, surfaces, buttons, table density, badges, and interaction states.
-- Kept the existing REST API, data model, and dependency-free frontend runtime compatible.
-- Added keyboard shortcut Ctrl/⌘ + K to focus lead search.
-
-## 0.1.0 — Initial MVP
-
-- Added Local / Export lead management on a shared data model.
-- Added CSV import, duplicate contact detection, rule-based lead scoring, customer details, follow-up tasks, and activity notes.
-- Added overview funnel, JSON persistence, run scripts, sample CSV files, API and product documentation.
+- Adds a three-column AI sales workbench: prospect list, conversation, and customer profile.
+- Adds search and Local / Export filters within the prospect list.
+- Adds per-lead conversation history stored in browser localStorage.
+- Adds rule-based demo responses for customer summaries, next-step plans, and communication drafts.
+- Adds actions to create a follow-up task, save the last recommendation as a lead activity, and refresh rule-based lead scoring.
+- Enforces UI-level guardrails: opted-out contacts receive no marketing message draft; unconfirmed contacts are instructed to verify contact permission first.
+- No real LLM call, external research, email delivery, or social messaging is implemented in this release.
+- Existing backend API and persisted data model remain unchanged.

@@ -17,6 +17,7 @@
     <nav class="main-nav" aria-label="主导航">
       <button class="nav-item active" data-page="overview"><span class="nav-icon">▦</span><span>增长总览</span></button>
       <button class="nav-item" data-page="leads"><span class="nav-icon">◎</span><span>线索中心</span><span class="nav-count" id="navLeadCount">0</span></button>
+      <button class="nav-item" data-page="assistant"><span class="nav-icon">✦</span><span>AI 销售工作台</span><span class="nav-ai-badge">AI</span></button>
       <button class="nav-item" data-page="tasks"><span class="nav-icon">✓</span><span>跟进任务</span></button>
     </nav>
     <div class="nav-label products-label">PRODUCTS</div>
@@ -59,6 +60,56 @@
       <section class="page" id="page-leads">
         <div class="page-heading compact-heading"><div><div class="eyebrow">LEAD MANAGEMENT</div><h1>线索中心</h1><p>所有潜在客户的统一入口，识别价值、跟进进度和联系权限一目了然。</p></div><div class="heading-actions"><button class="button button-secondary" id="leadsImportButton">⇧ 导入 CSV</button><button class="button button-primary" data-open-lead>＋ 新增线索</button></div></div>
         <section class="panel lead-panel"><div class="lead-toolbar"><label class="search-box"><span>⌕</span><input id="leadSearch" type="search" placeholder="搜索企业、联系人、邮箱或需求..."><kbd>⌘ K</kbd></label><div class="filter-group"><label class="filter-select"><span>阶段</span><select id="statusFilter"><option value="ALL">全部阶段</option><option value="NEW">新线索</option><option value="QUALIFIED">已筛选</option><option value="CONTACTED">跟进中</option><option value="OPPORTUNITY">商机</option><option value="WON">已成交</option><option value="LOST">已丢单</option></select></label><label class="filter-select"><span>业务</span><select id="leadMarketFilter"><option value="ALL">全部业务线</option><option value="LOCAL">本地获客</option><option value="EXPORT">外贸开发</option></select></label></div></div><div class="table-wrap"><table class="lead-table"><thead><tr><th>客户信息</th><th>业务线</th><th>来源</th><th>意向评分</th><th>阶段</th><th>联系权限</th><th>创建时间</th><th></th></tr></thead><tbody id="leadRows"></tbody></table></div><div class="table-footer"><span id="leadResultCount">0 条线索</span><span>数据保存在当前演示工作空间</span></div></section>
+      </section>
+      <section class="page" id="page-assistant">
+        <div class="page-heading compact-heading assistant-heading">
+          <div><div class="eyebrow">AI SALES COPILOT</div><h1>AI 销售工作台</h1><p>围绕当前客户整理信息、生成沟通建议，并把下一步行动落实为任务。</p></div>
+          <div class="assistant-mode-label"><span class="mode-dot"></span>规则演示模式 · 不会自动外发</div>
+        </div>
+        <div class="assistant-workspace">
+          <aside class="assistant-lead-panel panel">
+            <div class="assistant-panel-head"><div><div class="panel-kicker">YOUR PROSPECTS</div><h2>客户列表</h2></div><span class="assistant-count" id="assistantLeadCount">0</span></div>
+            <label class="assistant-search"><span>⌕</span><input id="assistantLeadSearch" type="search" placeholder="搜索客户..." aria-label="搜索客户"></label>
+            <select class="assistant-market-filter" id="assistantMarketFilter" aria-label="筛选业务线"><option value="ALL">全部业务线</option><option value="LOCAL">Local Growth</option><option value="EXPORT">Export Growth</option></select>
+            <div class="assistant-lead-list" id="assistantLeadList"><div class="empty-state">正在加载客户...</div></div>
+            <div class="assistant-list-foot">选择一位客户开始整理销售思路</div>
+          </aside>
+          <section class="assistant-chat-panel panel">
+            <header class="assistant-chat-header">
+              <div class="assistant-active-customer"><span class="assistant-customer-avatar" id="assistantCustomerAvatar">—</span><div><strong id="assistantCustomerName">选择一位客户</strong><small id="assistantCustomerMeta">从左侧客户列表中选择</small></div></div>
+              <div class="assistant-chat-actions"><span class="demo-chip"><i></i>演示引擎</span><button class="icon-button" id="assistantRefreshButton" title="刷新客户数据" aria-label="刷新客户数据">↻</button></div>
+            </header>
+            <div class="assistant-context-strip" id="assistantContextStrip">选择客户后，AI 助手会根据已录入的信息提供整理和跟进建议。</div>
+            <div class="assistant-messages" id="assistantMessages" aria-live="polite">
+              <div class="assistant-welcome"><span class="assistant-welcome-icon">✦</span><h2>让客户信息，变成下一步行动。</h2><p>选择左侧客户，再告诉我你想完成什么。演示版会基于已有客户字段生成可解释的建议。</p></div>
+            </div>
+            <div class="assistant-composer-area">
+              <div class="assistant-quick-prompts">
+                <button type="button" data-ai-prompt="请总结这个客户的需求、已知信息和待确认问题。">总结客户需求</button>
+                <button type="button" data-ai-prompt="请为这个客户制定下一步跟进计划。">制定跟进计划</button>
+                <button type="button" data-ai-prompt="请生成一段适合当前客户的首次跟进沟通话术。">生成沟通话术</button>
+              </div>
+              <form class="assistant-composer" id="assistantComposer">
+                <textarea id="assistantInput" rows="2" maxlength="1500" placeholder="例如：帮我判断客户当前最关心什么，以及下次应该问什么..." aria-label="输入销售任务"></textarea>
+                <div class="assistant-composer-bottom"><span>Enter 发送 · Shift + Enter 换行</span><button type="submit" class="button button-primary" id="assistantSendButton">发送建议 ↗</button></div>
+              </form>
+              <div class="assistant-disclaimer">当前为本地规则演示助手，不调用真实大模型；对话仅保存在此浏览器。生成内容需人工核验，不会自动发送给客户。</div>
+            </div>
+          </section>
+          <aside class="assistant-profile-panel">
+            <section class="panel assistant-profile-card">
+              <div class="assistant-panel-head"><div><div class="panel-kicker">CUSTOMER PROFILE</div><h2>客户画像</h2></div><button class="text-button" id="assistantAnalyzeButton" type="button">重新分析</button></div>
+              <div id="assistantProfileContent"><div class="assistant-profile-empty">选择客户后查看画像与销售上下文。</div></div>
+            </section>
+            <section class="panel assistant-next-card">
+              <div class="panel-kicker">NEXT BEST ACTION</div><h2>建议下一步</h2>
+              <p id="assistantNextAction">选择客户后，这里会展示建议行动。</p>
+              <button class="button button-primary assistant-action-button" type="button" id="assistantCreateTaskButton" disabled>＋ 创建跟进任务</button>
+              <button class="button button-secondary assistant-action-button" type="button" id="assistantSaveNoteButton" disabled>保存建议到客户记录</button>
+            </section>
+            <div class="assistant-privacy-note"><span>盾</span><div><strong>联系权限提醒</strong><p id="assistantPermissionText">系统会先检查联系权限状态。未确认或已拒绝联系的客户，不会生成可直接发送的营销指令。</p></div></div>
+          </aside>
+        </div>
       </section>
       <section class="page" id="page-tasks">
         <div class="page-heading compact-heading"><div><div class="eyebrow">SALES FOLLOW-UP</div><h1>跟进任务</h1><p>把客户沟通转化为有负责人、有截止时间的实际行动。</p></div><div class="heading-actions"><button class="button button-primary" id="newTaskButton">＋ 新建任务</button></div></div>
