@@ -540,6 +540,11 @@ final class AiGateway {
         return a == null || a.isBlank() ? (b == null || b.isBlank() ? fallback : b) : a;
     }
 
+    private String firstNonBlank(String value, String fallback) {
+        return value == null || value.isBlank() ? fallback : value;
+    }
+
+
     @SuppressWarnings("unchecked")
     private Map<String, Object> asMap(Object value) {
         if (!(value instanceof Map<?, ?> map)) return new LinkedHashMap<>();
