@@ -117,7 +117,7 @@
         <section class="panel task-panel"><div class="panel-heading"><div><div class="panel-kicker">TASK MANAGEMENT</div><h2>任务列表</h2><p>完成后及时更新状态</p></div><label class="filter-select"><span>状态</span><select id="taskStatusFilter"><option value="ALL">全部任务</option><option value="OPEN">待处理</option><option value="IN_PROGRESS">进行中</option><option value="DONE">已完成</option></select></label></div><div id="taskRows" class="task-list"></div></section>
       </section>
     </div>
-    <footer class="app-footer"><span>© 2026 LeadOS · UI 0.2.0</span><span>演示环境 · 请勿录入真实敏感个人信息</span><span id="connectionStatus">● 正在连接</span></footer>
+    <footer class="app-footer"><span>© 2026 LeadOS · MVP 0.3.0</span><span>演示环境 · 请勿录入真实敏感个人信息</span><span id="connectionStatus">● 正在连接</span></footer>
   </main>
 </div>
 <div class="sidebar-scrim" id="sidebarScrim"></div>
@@ -146,6 +146,7 @@
 <div class="toast-region" id="toastRegion" aria-live="polite"></div>
 <script src="/app.js" defer></script>
 <script src="/ui-enhancements.js" defer></script>
+<script src="/assistant-workbench.js" defer></script>
 <script>
 (() => {
  const menu=document.getElementById('mobileMenuButton'), side=document.getElementById('sidebar'), scrim=document.getElementById('sidebarScrim');
