@@ -272,6 +272,7 @@
         dueAt: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
       }});
       notify('已创建跟进任务');
+      window.dispatchEvent(new Event('leados:data-changed'));
     } catch (error) { notify(error.message, 'error'); }
   }
 
@@ -283,6 +284,7 @@
         type: 'NOTE', content: 'AI 销售建议（规则演示，待人工审核）：\n' + model.lastReply
       }});
       notify('建议已保存到客户互动记录');
+      window.dispatchEvent(new Event('leados:data-changed'));
     } catch (error) { notify(error.message, 'error'); }
   }
 
@@ -295,6 +297,7 @@
       model.leads = result.items || [];
       renderLeadList();
       renderSelectedLead();
+      window.dispatchEvent(new Event('leados:data-changed'));
       notify('客户评分已刷新（规则演示引擎）');
     } catch (error) { notify(error.message, 'error'); }
   }

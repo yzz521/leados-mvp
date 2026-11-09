@@ -347,4 +347,5 @@ function bindEvents() {
 }
 
 bindEvents();
+window.addEventListener('leados:data-changed', () => loadData());
 loadData();
