@@ -1,0 +1,41 @@
+name: LeadOS build and smoke tests
+
+on:
+  push:
+    branches:
+      - main
+      - ai-gateway-0.4.0
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+      - name: Compile and start LeadOS
+        shell: bash
+        run: |
+          set -euo pipefail
+          ./scripts/run.sh > /tmp/leados.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:8080/api/health >/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          curl -fsS http://127.0.0.1:8080/api/health
+          python3 scripts/smoke-test.py
+          python3 scripts/ai-gateway-smoke-test.py

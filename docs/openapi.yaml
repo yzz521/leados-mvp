@@ -1,7 +1,7 @@
 openapi: 3.1.0
 info:
   title: LeadOS MVP API
-  version: 0.2.0
+  version: 0.4.0
   description: Local/Export lead and sales follow-up workspace API. Demo-only; no authentication.
 servers:
   - url: http://localhost:8080
@@ -149,6 +149,69 @@ paths:
       summary: Delete task
       responses:
         '200': { description: Task deleted }
+  /api/ai/status:
+    get:
+      summary: Get server-side AI gateway status
+      responses:
+        '200': { description: AI provider configuration status; API keys are never returned }
+  /api/ai/knowledge:
+    get:
+      summary: List product and sales knowledge materials
+      parameters:
+        - in: query
+          name: marketType
+          schema: { type: string, enum: [ALL, LOCAL, EXPORT], default: ALL }
+      responses:
+        '200': { description: Knowledge list }
+    post:
+      summary: Add a product, strategy, FAQ or policy knowledge entry
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AiKnowledgeInput' }
+      responses:
+        '201': { description: Knowledge created }
+        '400': { description: Validation error }
+  /api/ai/knowledge/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    delete:
+      summary: Delete a knowledge entry
+      responses:
+        '200': { description: Knowledge deleted }
+        '404': { description: Knowledge not found }
+  /api/ai/chat:
+    post:
+      summary: Send a customer-contextual message to the server-side AI gateway
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AiChatInput' }
+      responses:
+        '200': { description: Assistant reply, persisted conversation and pending tool actions }
+        '400': { description: Validation error }
+        '502': { description: AI provider error }
+  /api/ai/conversations/{id}:
+    parameters:
+      - $ref: '#/components/parameters/Id'
+    get:
+      summary: Get a persisted AI conversation
+      responses:
+        '200': { description: Conversation messages and pending actions }
+        '404': { description: Conversation not found }
+  /api/ai/actions/execute:
+    post:
+      summary: Execute a pending internal tool action after explicit confirmation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AiActionConfirm' }
+      responses:
+        '200': { description: Internal task or customer note created }
+        '400': { description: Action rejected or not confirmed }
 components:
   parameters:
     Id:
@@ -175,6 +238,28 @@ components:
         owner: { type: string }
         status: { type: string, enum: [NEW, QUALIFIED, CONTACTED, OPPORTUNITY, WON, LOST] }
         contactPermission: { type: string, enum: [UNCONFIRMED, AUTHORIZED, OPTED_OUT, NOT_APPLICABLE] }
+    AiKnowledgeInput:
+      type: object
+      required: [marketType, kind, title, content]
+      properties:
+        marketType: { type: string, enum: [ALL, LOCAL, EXPORT] }
+        kind: { type: string, enum: [PRODUCT, STRATEGY, FAQ, POLICY] }
+        title: { type: string, maxLength: 120 }
+        content: { type: string, maxLength: 12000 }
+    AiChatInput:
+      type: object
+      required: [leadId, message]
+      properties:
+        leadId: { type: string }
+        conversationId: { type: string }
+        message: { type: string, maxLength: 4000 }
+    AiActionConfirm:
+      type: object
+      required: [conversationId, actionId, confirmed]
+      properties:
+        conversationId: { type: string }
+        actionId: { type: string }
+        confirmed: { type: boolean, const: true }
     TaskInput:
       type: object
       properties:

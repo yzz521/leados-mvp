@@ -1,6 +1,6 @@
 # LeadOS MVP — AI 商机增长工作台
 
-> 版本：0.3.0  
+> 版本：0.4.0  
 > 交付形态：可运行的本地 MVP 源码 + 操作文档 + API 说明  
 > 目标：用一套共同底座承载 Local Growth（国内本地获客）和 Export Growth（外贸客户开发）两条业务线。
 
@@ -13,7 +13,7 @@ LeadOS 是一个围绕“线索进入—客户识别—销售跟进—商机转�
 - CSV 导入：支持中英文常见字段名，重复邮箱/手机号自动跳过。
 - 客户分析：使用可解释的本地规则计算 0–100 分，并给出下一步建议。
 - 跟进任务：创建任务、关联线索、调整状态、完成/重新打开。
-- AI 销售工作台：按客户生成需求摘要、跟进计划和沟通草稿；建议可保存为互动记录，也可转为跟进任务。当前使用规则演示引擎，对话保存在当前浏览器。
+- AI 销售工作台：支持服务端模型网关、多轮会话、客户历史上下文、Local / Export 知识资料和需要用户确认的内部工具动作。未配置模型时自动降级为规则演示模式。
 - 互动记录：查看系统记录，并为客户添加人工跟进备注。
 - Local / Export：同一客户和销售底座，通过 `marketType` 区分业务线。
 - 文件持久化：数据写入 `data/leados.json`，重启不丢失。
@@ -23,10 +23,10 @@ LeadOS 是一个围绕“线索进入—客户识别—销售跟进—商机转�
 当前版本是**单机、单工作空间 MVP**，用于产品验证和流程演示，不是可直接公开运营的生产 SaaS：
 
 - 没有登录、身份认证和真正的多租户鉴权。
-- 当前使用 JSON 文件存储，不是 PostgreSQL。
-- 客户评分使用本地规则引擎，不调用大模型；界面不会把它冒充成真实 AI。
+- 当前使用 JSON 文件存储，不是 PostgreSQL；AI 知识资料和会话另存为 `data/leados-ai.json`。
+- 客户评分使用本地规则引擎；AI 对话可通过服务端 OpenAI-compatible Chat Completions 网关调用真实模型，具体取决于环境变量配置。
 - 没有接入抖音、微信、LinkedIn、Google、WhatsApp 等外部平台。
-- 没有发送短信、邮件、私信或自动营销行为。
+- 没有发送短信、邮件、私信或自动营销行为；模型工具白名单仅允许创建内部任务和保存客户备注，且必须经用户确认。
 - 没有订阅支付、账单和线上套餐管理。
 - 示例客户和邮箱均为虚构演示数据；不要录入真实敏感个人信息。
 
@@ -123,7 +123,9 @@ leados-mvp/
 │       ├── java/com/leados/
 │       │   ├── LeadOsApplication.java  # JDK HTTP 服务入口
 │       │   ├── ApiHandler.java         # REST API、静态资源及业务校验
-│       │   ├── LeadStore.java          # JSON 文件持久化仓库
+│       │   ├── LeadStore.java          # 线索/任务/互动 JSON 仓库
+│       │   ├── AiStore.java            # AI 知识与会话 JSON 仓库
+│       │   ├── AiGateway.java          # 服务端模型网关和受控工具
 │       │   └── Json.java               # 零依赖 JSON 解析/序列化
 │       └── resources/static/
 │           ├── index.html
@@ -151,7 +153,13 @@ leados-mvp/
 
 详细设计规范和手工验收点见 `docs/11-UI-UX-Redesign.md`；页面预览截图见 `docs/screenshots/`。
 
-## 9. API 文档
+## 9. 配置真实 AI 模型
+
+真实模型调用只在后端进行，浏览器不会接触 API Key。复制 `.env.example` 为项目根目录下的 `.env`，填写 Base URL、模型名称和服务端 Key，然后在 macOS / Linux 执行 `./scripts/run-with-ai.sh`。Windows PowerShell 可在运行 `scripts\run.bat` 前设置对应环境变量。
+
+模型服务必须兼容 OpenAI Chat Completions 并支持 function/tool calling。启动后可通过 `GET /api/ai/status` 检查模型配置。详见 `docs/13-AI-Gateway-Configuration.md` 和 `docs/14-AI-Gateway-API.md`。
+
+## 10. API 文档
 
 启动服务后，健康检查：
 
@@ -164,7 +172,7 @@ curl http://localhost:8080/api/health
 - `docs/04-API-Reference.md`
 - `docs/openapi.yaml`
 
-## 10. 验证方法
+## 11. 验证方法
 
 项目已在 JDK 21 环境完成编译和 HTTP 冒烟验证。启动服务后另开一个终端执行：
 
@@ -178,7 +186,7 @@ python3 scripts/smoke-test.py
 LEADOS_BASE_URL=http://localhost:8181 python3 scripts/smoke-test.py
 ```
 
-## 11. 下一步开发建议
+## 12. 下一步开发建议
 
 生产 SaaS 的推荐升级顺序：
 
@@ -192,6 +200,6 @@ LEADOS_BASE_URL=http://localhost:8181 python3 scripts/smoke-test.py
 
 详细路线见 `docs/08-Roadmap.md`。
 
-## 12. 安全提示
+## 13. 安全提示
 
 不要将本地演示服务直接暴露到公网。当前版本无身份认证、TLS、租户鉴权和速率限制。对真实个人信息或客户名单进行处理前，应先明确数据来源、处理目的、联系授权、跨境要求、保留期限和退订机制。详见 `docs/07-Compliance-and-Security.md`。

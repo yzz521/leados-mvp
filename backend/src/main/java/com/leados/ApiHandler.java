@@ -22,8 +22,14 @@ final class ApiHandler implements HttpHandler {
             "marketType", "subjectType", "companyName", "contactName", "email", "phone", "region",
             "source", "productInterest", "requirement", "budget", "timeline", "owner", "status", "contactPermission");
     private final LeadStore store;
+    private final AiStore aiStore;
+    private final AiGateway aiGateway;
 
-    ApiHandler(LeadStore store) { this.store = store; }
+    ApiHandler(LeadStore store, AiStore aiStore) {
+        this.store = store;
+        this.aiStore = aiStore;
+        this.aiGateway = new AiGateway(store, aiStore);
+    }
 
     @Override
     public void handle(HttpExchange exchange) throws IOException {
@@ -44,7 +50,7 @@ final class ApiHandler implements HttpHandler {
     private void routeApi(HttpExchange x, String path) throws IOException {
         String method = x.getRequestMethod().toUpperCase(Locale.ROOT);
         if ("GET".equals(method) && "/api/health".equals(path)) {
-            sendJson(x, 200, mapOf("status", "UP", "application", "LeadOS", "version", "0.2.0", "time", Instant.now().toString()));
+            sendJson(x, 200, mapOf("status", "UP", "application", "LeadOS", "version", "0.4.0", "time", Instant.now().toString()));
             return;
         }
         if ("GET".equals(method) && "/api/overview".equals(path)) { sendJson(x, 200, overview()); return; }
@@ -55,7 +61,19 @@ final class ApiHandler implements HttpHandler {
         if ("POST".equals(method) && "/api/tasks".equals(path)) { createTask(x); return; }
         if ("GET".equals(method) && "/api/activities".equals(path)) { listActivities(x); return; }
 
+        if ("GET".equals(method) && "/api/ai/status".equals(path)) { sendJson(x, 200, aiGateway.status()); return; }
+        if ("GET".equals(method) && "/api/ai/knowledge".equals(path)) { listAiKnowledge(x); return; }
+        if ("POST".equals(method) && "/api/ai/knowledge".equals(path)) { createAiKnowledge(x); return; }
+        if ("POST".equals(method) && "/api/ai/chat".equals(path)) { chatWithAi(x); return; }
+        if ("POST".equals(method) && "/api/ai/actions/execute".equals(path)) { executeAiAction(x); return; }
+
         String[] parts = path.split("/");
+        if (parts.length == 5 && "ai".equals(parts[2]) && "conversations".equals(parts[3]) && "GET".equals(method)) {
+            getAiConversation(x, decode(parts[4])); return;
+        }
+        if (parts.length == 5 && "ai".equals(parts[2]) && "knowledge".equals(parts[3]) && "DELETE".equals(method)) {
+            deleteAiKnowledge(x, decode(parts[4])); return;
+        }
         if (parts.length >= 4 && "leads".equals(parts[2])) {
             String id = decode(parts[3]);
             if (parts.length == 4 && "GET".equals(method)) { getLead(x, id); return; }
@@ -70,6 +88,61 @@ final class ApiHandler implements HttpHandler {
             if ("DELETE".equals(method)) { deleteTask(x, id); return; }
         }
         sendError(x, 404, "NOT_FOUND", "接口不存在");
+    }
+
+    private void listAiKnowledge(HttpExchange x) throws IOException {
+        String marketType = query(x).getOrDefault("marketType", "ALL");
+        List<Map<String, Object>> items = aiGateway.knowledge(marketType);
+        sendJson(x, 200, mapOf("items", items, "total", items.size()));
+    }
+
+    private void createAiKnowledge(HttpExchange x) throws IOException {
+        Map<String, Object> input = body(x);
+        Map<String, Object> item = aiGateway.addKnowledge(
+                str(input.getOrDefault("marketType", "ALL")),
+                str(input.get("kind")),
+                str(input.get("title")),
+                str(input.get("content")));
+        sendJson(x, 201, item);
+    }
+
+    private void deleteAiKnowledge(HttpExchange x, String id) throws IOException {
+        Map<String, Object> removed = aiGateway.deleteKnowledge(id);
+        if (removed == null) { sendError(x, 404, "KNOWLEDGE_NOT_FOUND", "知识资料不存在"); return; }
+        sendJson(x, 200, mapOf("success", true, "id", id));
+    }
+
+    private void chatWithAi(HttpExchange x) throws IOException {
+        Map<String, Object> input = body(x);
+        try {
+            Map<String, Object> result = aiGateway.chat(
+                    str(input.get("leadId")),
+                    str(input.get("message")),
+                    str(input.get("conversationId")));
+            sendJson(x, 200, result);
+        } catch (IllegalArgumentException ex) {
+            sendError(x, 400, "AI_VALIDATION_ERROR", ex.getMessage());
+        } catch (IOException ex) {
+            sendError(x, 502, "AI_PROVIDER_ERROR", "模型服务调用失败：" + ex.getMessage());
+        }
+    }
+
+    private void getAiConversation(HttpExchange x, String id) throws IOException {
+        Map<String, Object> conversation = aiGateway.conversation(id);
+        if (conversation == null) { sendError(x, 404, "CONVERSATION_NOT_FOUND", "AI 会话不存在"); return; }
+        sendJson(x, 200, conversation);
+    }
+
+    private void executeAiAction(HttpExchange x) throws IOException {
+        Map<String, Object> input = body(x);
+        String conversationId = str(input.get("conversationId"));
+        String actionId = str(input.get("actionId"));
+        boolean confirmed = Boolean.TRUE.equals(input.get("confirmed"));
+        try {
+            sendJson(x, 200, aiGateway.executeAction(conversationId, actionId, confirmed));
+        } catch (IllegalArgumentException ex) {
+            sendError(x, 400, "AI_ACTION_REJECTED", ex.getMessage());
+        }
     }
 
     private Map<String, Object> overview() {
