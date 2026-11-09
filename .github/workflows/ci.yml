@@ -23,13 +23,44 @@ jobs:
         with:
           distribution: temurin
           java-version: "21"
-      - name: Compile and start LeadOS
+      - name: Compile, start and test LeadOS
         shell: bash
         run: |
           set -euo pipefail
+
+          python3 scripts/mock-ai-provider.py > /tmp/mock-ai-provider.log 2>&1 &
+          MOCK_PID=$!
+          SERVER_PID=""
+          cleanup() {
+            if [[ -n "$SERVER_PID" ]]; then kill "$SERVER_PID" 2>/dev/null || true; fi
+            kill "$MOCK_PID" 2>/dev/null || true
+          }
+          trap cleanup EXIT
+
+          MOCK_READY=0
+          for i in $(seq 1 10); do
+            if curl -fsS http://127.0.0.1:8090/health >/dev/null; then
+              MOCK_READY=1
+              break
+            fi
+            if ! kill -0 "$MOCK_PID" 2>/dev/null; then
+              echo "Mock AI provider failed to start."
+              cat /tmp/mock-ai-provider.log
+              exit 1
+            fi
+            sleep 1
+          done
+          if [[ "$MOCK_READY" != "1" ]]; then
+            echo "Mock AI provider did not become healthy."
+            cat /tmp/mock-ai-provider.log
+            exit 1
+          fi
+
+          LEADOS_AI_BASE_URL="http://127.0.0.1:8090/v1" \
+          LEADOS_AI_MODEL="mock-tool-model" \
           ./scripts/run.sh > /tmp/leados.log 2>&1 &
           SERVER_PID=$!
-          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+
           READY=0
           for i in $(seq 1 30); do
             if curl -fsS http://127.0.0.1:8080/api/health >/dev/null; then
@@ -48,6 +79,8 @@ jobs:
             cat /tmp/leados.log
             exit 1
           fi
+
           curl -fsS http://127.0.0.1:8080/api/health
           python3 scripts/smoke-test.py
           python3 scripts/ai-gateway-smoke-test.py
+          python3 scripts/ai-gateway-model-test.py
