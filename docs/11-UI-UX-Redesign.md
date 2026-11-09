@@ -1,94 +1,50 @@
 # LeadOS UI/UX Redesign — 0.2.0
 
-## 1. 设计目标
+## Goals
 
-0.1.0 的主要问题不是单一颜色，而是页面缺少一致的视觉语言：侧栏与主区域密度不一致、字符图标不统一、页面标题和表格字号偏小、信息层级较弱、客户详情弹窗会完全打断列表上下文。
+The first MVP proved the lead and task workflow but looked like a generic CRUD admin page. This revision establishes a coherent, lightweight SaaS workspace without introducing a frontend build chain or changing business API contracts.
 
-0.2.0 的目标是把 LeadOS 从“功能演示后台”提升为轻量、专业、可日常使用的销售工作台，同时保持零前端构建依赖和原有 API 兼容。
+## Visual system
 
-## 2. 视觉方向
+| Token | Value | Usage |
+|---|---|---|
+| Primary | #2D7654 | Primary actions, active states |
+| Sidebar | #1B2B23 | Main navigation surface |
+| Page background | #F5F7F5 | Workspace canvas |
+| Surface | #FFFFFF | Panels, forms, tables |
+| Border | #E7ECE8 | Dividers and component outlines |
+| Text | #202B25 | Primary text |
+| Muted | #7D8982 | Secondary text |
 
-- 产品气质：克制、清晰、可信赖，避免大面积渐变和高饱和装饰。
-- 主色：森林绿 `#2D7654`；深色导航 `#1D2822`；页面底色 `#F6F7F5`。
-- Local 使用柔和绿色语义，Export 使用低饱和蓝灰语义。颜色只用于表达业务属性或状态，不用于无意义装饰。
-- 字体采用系统字体回退栈，避免依赖 Google Fonts 等第三方 CDN，确保离线环境也可用。
-- 图标采用内联 SVG，避免 Unicode 字符在不同操作系统上出现粗细、尺寸和基线差异。
+Local Growth uses a soft green semantic treatment; Export Growth uses a low-saturation blue treatment. Status badges retain text labels and do not rely on color alone. Icons use inline or typographic primitives so the UI does not depend on third-party font CDNs.
 
-## 3. 页面结构
+## Page structure
 
-### 3.1 全局框架
+- **Growth overview:** KPI cards, stage funnel, priority tasks, recent leads.
+- **Lead center:** search, stage and market filters, permission status, score and inline stage updates.
+- **Task center:** task summaries, priority, due time and completion action.
+- **Lead profile:** right-side drawer on desktop and bottom sheet on narrow screens.
+- **Global shell:** persistent workspace navigation, market selector, refresh action and connection status.
 
-- 固定左侧导航：品牌、工作空间、核心导航、Local/Export 产品入口、AI 演示状态、用户资料。
-- 顶部栏：面包屑、业务视图切换、刷新、帮助和用户头像。
-- 内容区：统一最大宽度、统一页面留白，避免不同页面各自定义边距。
-- 底部状态栏：版本、演示数据提示、API 连接状态。
+## Interaction
 
-### 3.2 增长总览
+- Existing data-page, data-market, data-open-lead and data-goto actions are retained.
+- Existing lead, task, activity and CSV form IDs and field names are retained for compatibility with app.js.
+- Escape closes dialogs and the customer drawer.
+- Ctrl/⌘ + K opens the lead center and focuses the search field.
+- Mobile navigation opens as an off-canvas sidebar with a dismissible scrim.
+- Focus-visible outlines and reduced-motion preferences are supported.
 
-- KPI 指标：全部线索、待处理、高意向、待完成任务。
-- 商机转化漏斗：根据当前筛选范围内的线索阶段计算数量。
-- 今日优先事项：展示未完成任务，按截止时间排序。
-- 最近新增线索：展示真实 API 返回数据，不使用虚构趋势图或虚构成交金额。
+## Compatibility and scope
 
-### 3.3 线索中心
+- No changes to API endpoints or payloads.
+- No React, Vue, icon package, Tailwind or external font dependency introduced.
+- AI analysis continues to be labeled as a local rule-based demo; the UI does not claim a real model call.
+- The product remains a local MVP. Authentication, multi-tenant authorization, PostgreSQL, real channel connectors, messaging delivery and subscription billing are not added by this UI revision.
 
-- 搜索字段覆盖企业、联系人、邮箱、电话、地区、产品和需求。
-- 阶段与业务线筛选器在同一工具栏中。
-- 表格状态、权限、分数使用统一语义标签。
-- 行内保留详情、分析入口；阶段调整继续使用原有 PATCH API。
+## Validation
 
-### 3.4 跟进任务
-
-- 顶部展示待处理、进行中、已完成数量。
-- 任务行包含完成开关、任务内容、优先级和截止时间。
-- 保留现有任务创建、状态更新 API。
-
-### 3.5 客户详情
-
-- 桌面端使用右侧抽屉，保留线索列表的上下文。
-- 移动端转为底部抽屉。
-- 展示客户资料、规则评分解释、互动记录、备注和创建跟进任务。
-
-## 4. 交互与可访问性
-
-- 按钮、导航、表单均提供 hover / focus-visible 状态。
-- Escape 关闭当前打开的对话框或抽屉。
-- `⌘/Ctrl + K` 切换到线索中心并聚焦搜索框。
-- 手机端通过菜单按钮打开侧滑导航，点击遮罩或导航项关闭。
-- `prefers-reduced-motion` 用户减少过渡动画。
-- 不依赖颜色单独表达业务状态，状态标签始终包含文字。
-
-## 5. 兼容性和非目标
-
-- 不增加 React、Vue、Tailwind、图标包或其他第三方前端运行时依赖。
-- 不修改已有 `/api/overview`、`/api/leads`、`/api/tasks`、活动记录及 CSV 导入接口。
-- 不在 UI 层伪造 AI 结果；当前分析能力仍明确标记为规则演示引擎。
-- 本次不新增未实现的菜单入口或按钮。
-
-## 6. 验收清单
-
-- [x] JDK 21 编译通过。
-- [x] 首页、CSS、JS 静态资源返回 HTTP 200。
-- [x] 总览指标和最近线索渲染。
-- [x] 新增线索弹窗打开与关闭。
-- [x] 线索中心列表、筛选控件渲染。
-- [x] 客户详情抽屉打开与关闭。
-- [x] 跟进任务列表渲染。
-- [x] 移动端侧滑导航打开。
-- [x] 浏览器端无未捕获 JavaScript 异常。
-- [ ] 真实数据环境的多设备人工体验验收（需由项目使用者完成）。
-
-## 7. 页面预览
-
-- `screenshots/01-growth-overview.png`：增长总览。
-- `screenshots/02-lead-list.png`：线索列表。
-- `screenshots/03-lead-detail-drawer.png`：客户详情抽屉。
-- `screenshots/04-task-center.png`：跟进任务。
-- `screenshots/05-mobile-navigation.png`：移动端侧滑导航。
-
-## 8. 后续设计建议
-
-- 建立 Storybook 或轻量组件展示页前，先从 `styles.css` 抽出颜色、间距、字号、圆角和阴影 Token。
-- 真实 CRM 客户列表上线后，增加列配置、批量选择、批量分配和保存筛选视图。
-- AI 工作台应独立设计成对话与客户上下文并列的双栏，而不是在普通 CRUD 页面添加一个聊天气泡。
-- 当引入 Vue 3 前端工程化时，按 `Button`、`Badge`、`DataTable`、`Drawer`、`FormField`、`MetricCard` 等基础组件逐步迁移，不要一次重写业务逻辑。
+- Preserve every DOM ID consumed by the existing frontend controller.
+- Confirm the overview, lead list, task list and form controls can render.
+- Confirm modal open/close behavior, drawer layout and mobile navigation.
+- Run the project's JDK 21 startup and HTTP smoke-test script before release.
